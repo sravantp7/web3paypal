@@ -89,5 +89,64 @@ contract Paypal {
         require(msg.value >= payableRequest.amount, "Insufficient Amount");
         (bool success, ) = payable(payableRequest.requestor).call{value: payableRequest.amount}("");
         require(success, "Transfer Failed");
+
+        addHistory(msg.sender, payableRequest.requestor, payableRequest.amount, payableRequest.message);
+    }
+
+    /**
+     * @dev this function add the request details to history array for the sender
+     * @param _sender address of the person who pay the request
+     * @param _receiver person who requested for fund in the first place
+     * @param _amount requested amount
+     * @param _message message associated with the request
+     */
+    function addHistory(address _sender, address _receiver, uint256 _amount, string memory _message) private {
+        // adds history for the sender
+        sendReceive memory newSend;
+        newSend.action = "-"; // - indicates paying
+        newSend.amount = _amount;
+        newSend.message = _message;
+        newSend.otherPartyAddress = _receiver;
+        if (names[_receiver].hasName) {
+            newSend.otherPartyName = names[_receiver].name;
+        }
+        
+        // pushing new history to history array of the sender
+        history[_sender].push(newSend);
+
+        // adds history for receiver
+        sendReceive memory newReceive;
+        newReceive.action = "+"; // + means receiving fund
+        newReceive.amount = _amount;
+        newReceive.message = _message;
+        newReceive.otherPartyAddress = _sender;
+        if (names[_sender].hasName) {
+            newReceive.otherPartyName = names[_sender].name;
+        }
+
+        // adding history for the receiver
+        history[_receiver].push(newReceive);
+    }
+
+    function getMyRequests(address _user) external view returns (address[] memory, uint256[] memory, string[] memory, string[] memory) {
+        // creating temp arrays of size requests[_user].length
+        address[] memory addr = new address[](requests[_user].length);
+        uint256[] memory amt = new uint256[](requests[_user].length);
+        string[] memory message = new string[](requests[_user].length);
+        string[] memory name = new string[](requests[_user].length);
+
+        for (uint256 i = 0; i < requests[_user].length; i++) {
+            request memory myRequest = requests[_user][i];
+            addr[i] = myRequest.requestor;
+            amt[i] = myRequest.amount;
+            message[i] = myRequest.message;
+            name[i] = myRequest.name;
+        }
+
+        return (addr, amt, message, name);
+    }
+
+    function getHistory() external view returns (sendReceive[] memory) {
+        return history[msg.sender];
     }
 }
