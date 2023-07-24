@@ -146,7 +146,13 @@ contract Paypal {
         return (addr, amt, message, name);
     }
 
-    function getHistory() external view returns (sendReceive[] memory) {
-        return history[msg.sender];
+    // function used to get all the requests send to the provided address
+    function getHistory(address _user) external view returns (sendReceive[] memory) {
+        return history[_user];
+    }
+
+    // function return the name of the _user address
+    function getMyName(address _user) external view returns (userName memory) {
+        return names[_user];
     }
 }
