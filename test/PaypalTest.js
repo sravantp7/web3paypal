@@ -101,5 +101,34 @@ describe("Paypal", function () {
         user1BalanceAfterRequest + ethers.parseEther("10")
       );
     });
+
+    it("should revert if request id is invalid", async function () {
+      const [, user1] = await ethers.getSigners();
+      const reqId = 0; // invalid req id (because no request created here)
+      await expect(Paypal.connect(user1).payRequest(reqId)).to.revertedWith(
+        "Invalid Request"
+      );
+    });
+
+    it("should revert if not enough eth sent", async function () {
+      const [, user1, user2] = await ethers.getSigners();
+      const tx1 = await Paypal.connect(user1).addName("JOY");
+      await tx1.wait();
+
+      const tx2 = await Paypal.connect(user2).addName("JIM");
+      await tx2.wait();
+
+      // USER1 Creating request to user2
+      const tx3 = await Paypal.connect(user1).createRequest(
+        await user2.getAddress(),
+        ethers.parseEther("10"),
+        "Pocket Money"
+      );
+      await tx3.wait();
+
+      await expect(Paypal.connect(user2).payRequest(0)).to.revertedWith(
+        "Insufficient Amount"
+      );
+    });
   });
 });
