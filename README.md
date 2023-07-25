@@ -7,7 +7,6 @@ This web3 Paypal Smart Contract allows users to
   2. Create requests to another wallet for eth.
   3. Allow users to pay the existing requests.
   4. Get the history of all send/receive requests.
-  5. 
 
 ## Usage
 1. Clone the repository
