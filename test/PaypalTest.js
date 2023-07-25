@@ -131,4 +131,18 @@ describe("Paypal", function () {
       );
     });
   });
+
+  describe("Event", function () {
+    it("should emit event when adding username to account", async function () {
+      const [, user] = await ethers.getSigners();
+      const name = "BEN";
+      const tx = await Paypal.connect(user).addName(name);
+      await tx.wait();
+
+      // Testing whether the event is emitted or not
+      await expect(Paypal.connect(user).addName(name))
+        .to.emit(Paypal, "UserNameAdded")
+        .withArgs(await user.getAddress(), name);
+    });
+  });
 });
