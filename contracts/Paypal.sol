@@ -155,4 +155,12 @@ contract Paypal {
     function getMyName(address _user) external view returns (userName memory) {
         return names[_user];
     }
+
+    function withdraw() external onlyOwner {
+        (bool success, ) = payable(owner).call{value: address(this).balance}("");
+        require(success, "Transfer Failed");
+    }
+
+    receive() external payable {}
+    fallback() external payable {}
 }
